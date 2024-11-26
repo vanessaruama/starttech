@@ -1,0 +1,29 @@
+#include "fw-tlpp-rest.th"
+#include "protheus.ch"
+
+namespace totvs.framework.starttech
+
+//-------------------------------------------------------------------
+/*/{Protheus.doc} startTechService
+Criação de api's para a aula de rest da Start Tech 2024
+
+@author  Vanessa Ruama
+@since   25/11/2024
+@version 1.0
+/*/
+//-------------------------------------------------------------------
+Class startTechService
+    Public Method New() Constructor
+EndClass
+
+//-------------------------------------------------------------------
+/*/{Protheus.doc} new
+Method construtor da classe
+
+@author  Vanessa Ruama
+@since   27/11/2024
+@version 1.0
+/*/
+//-------------------------------------------------------------------
+Method new() Class startTechService
+Return
