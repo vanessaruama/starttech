@@ -1,0 +1,42 @@
+#include 'protheus.ch'
+
+namespace totvs.framework.starttech
+#define __cTable "STARTTECH"
+
+//-------------------------------------------------------------------
+/*/{Protheus.doc} createSTTable
+    Faz a criação da tabela via user function
+
+@author  vanessa.ruama
+@since   27/11/2024
+@version 1.0
+/*/
+//-------------------------------------------------------------------
+user Function createSTTable() as logical
+    local aArea as array
+    local aStruct as array
+
+    if !FWTCCanOpen(__cTable)
+        aArea := FWGetArea()
+        aStruct := {}
+        //Abertura do ambiente para criação da tabela
+        RpcSetEnv('T1', 'D MG 01', "admin", "1234")
+
+        //Define os campos que terão na tabela
+        aAdd(aStruct,{"ST__ID"   	,"C",150,0})
+        aAdd(aStruct,{"ST__CLASS"   ,"C",150,0})
+        aAdd(aStruct,{"ST__NAME"    ,"C",150,0}) 
+        aAdd(aStruct,{"ST__AGE"     ,"N",002,0})
+        aAdd(aStruct,{"ST__HOBBIE"  ,"C",150,0})
+    
+        //Aciona a criação da tabela no Banco de Dados
+        FWDBCreate(__cTable, aStruct, "TOPCONN", .T.)
+
+        DbUseArea(.T.,"TOPCONN",__cTable,__cTable,.F.,.F.)
+        //Primary key da tabela
+        TcUnique(__cTable,"ST__ID")
+
+        (__cTable)->(dbCloseArea())
+        FWRestArea(aArea)
+    endif 
+return
