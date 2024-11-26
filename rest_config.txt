@@ -1,0 +1,28 @@
+[HTTPJOB]
+MAIN=HTTP_START
+ENVIRONMENT={nome do seu ambiente}
+
+[HTTPV11]
+Enable=1
+Sockets=HTTPREST
+Advpl=1
+
+[HTTPREST]
+Port=8050
+URIs=HTTPURI
+SECURITY=1
+Verbose = 1
+Bugs = 1
+STATE = 1
+
+[HTTPURI]
+URL=/rest
+PrepareIn=T1
+Instances=2,5,1,2
+CORSEnable=1
+AllowOrigin=*
+Stateless=1
+
+[ONSTART]
+JOBS=HTTPJOB
+REFRESHRATE=120
