@@ -17,6 +17,16 @@ Class startTechService
 
     @post("api/framework/v1/starttech")
     Public Method post() as logical 
+
+    @get("api/framework/v1/starttech")
+    @get("api/framework/v1/starttech/:id")
+    Public Method get() as logical 
+
+    @delete("api/framework/v1/starttech/:id")
+    Public Method delete() as logical 
+
+    @put("api/framework/v1/starttech/:id")
+    Public Method put() as logical 
 EndClass
 
 //-------------------------------------------------------------------
@@ -72,5 +82,160 @@ Method post() Class startTechService
         //sucesso
         oRest:setStatusCode(201)
         oRest:setResponse("Registro criado com sucesso")
+    endif
+Return
+
+//-------------------------------------------------------------------
+/*/{Protheus.doc} get
+Método para listagem das alunas da tabela STARTTECH
+
+@author  Vanessa Ruama
+@since   27/11/2024
+@version 1.0
+/*/
+//-------------------------------------------------------------------
+Method get() Class startTechService
+    local cQuery as character
+    local cAlias as character
+    local oStatement as object
+    local jResponse as json
+    local jItem as json
+    local lHasId as logical
+
+    oRest:appendKeyHeaderResponse("Content-Type", "application/json")
+
+    jPath := oRest:getPathParamsRequest()
+    lHasId := jPath:hasProperty('id')
+
+    cQuery := "SELECT * FROM STARTTECH"
+
+    if lHasId
+        cQuery += " WHERE ST__ID = ?"
+    endif
+
+    oStatement := FWPreparedStatement():new()
+    oStatement:setQuery(cQuery)
+
+    if lHasId
+        oStatement:setString(1, jPath['id'])
+    endif
+
+    cQuery := oStatement:getFixQuery()
+
+    if (TCSqlExec(cQuery) < 0)
+        //erro
+        oRest:setStatusCode(400)
+        oRest:setResponse("Erro na listagem dos registros, detalhes: " + TcSqlError())
+    else
+        //sucesso
+        oRest:setStatusCode(200)
+
+        cAlias := MPSysOpenQuery(cQuery)
+
+        jResponse := JsonObject():new()
+        jResponse['alunas'] := {}
+
+        while (!(cAlias)->(Eof()))
+            jItem := JsonObject():new()
+            jItem['id'] := AllTrim((cAlias)->(ST__ID))
+            jItem['class'] := AllTrim((cAlias)->(ST__CLASS))
+            jItem['name'] := AllTrim((cAlias)->(ST__NAME))
+            jItem['age'] := (cAlias)->(ST__AGE)
+            jItem['hobbie'] := AllTrim((cAlias)->(ST__HOBBIE))
+
+            aAdd(jResponse['alunas'], jItem)
+
+            (cAlias)->(DbSkip())
+        endDo
+        
+        if lHasId
+            oRest:setResponse(jResponse['alunas'][1])
+        else
+            oRest:setResponse(jResponse:toJson())
+        endif
+    endif
+Return
+
+//-------------------------------------------------------------------
+/*/{Protheus.doc} delete
+Método para deleção de registros
+
+@author  Vanessa Ruama
+@since   27/11/2024
+@version 1.0
+/*/
+//-------------------------------------------------------------------
+Method delete() Class startTechService
+    local cQuery as character
+    local oStatement as object
+    local jPath as json
+
+    oRest:appendKeyHeaderResponse("Content-Type", "application/json")
+
+    cQuery := "DELETE FROM STARTTECH"
+    cQuery += " WHERE ST__ID = ?"
+
+    jPath := oRest:getPathParamsRequest()
+
+    oStatement := FWPreparedStatement():new()
+    oStatement:setQuery(cQuery)
+    oStatement:setString(1, jPath['id'])
+
+    cQuery := oStatement:getFixQuery()
+
+    if (TCSqlExec(cQuery) < 0)
+        //erro
+        oRest:setStatusCode(400)
+        oRest:setResponse("Erro na deleção do registro, detalhes: " + TcSqlError())
+    else
+        //sucesso
+        oRest:setStatusCode(200) 
+        oRest:setResponse("Registro deletado com sucesso")
+    endif
+Return
+
+//-------------------------------------------------------------------
+/*/{Protheus.doc} put
+Método para deleção de registros
+
+@author  Vanessa Ruama
+@since   27/11/2024
+@version 1.0
+/*/
+//-------------------------------------------------------------------
+Method put() Class startTechService
+    local cQuery as character
+    local oStatement as object
+    local jPath as json
+    local jBody as json
+    local cBody as character
+
+    oRest:appendKeyHeaderResponse("Content-Type", "application/json")
+
+    cQuery := "UPDATE STARTTECH"
+    cQuery += " SET ST__HOBBIE = ?"
+    cQuery += " WHERE ST__ID = ?"
+
+    jPath := oRest:getPathParamsRequest()
+
+    cBody := DecodeUtf8(oRest:getBodyRequest())
+    jBody := JsonObject():new()
+    jBody:fromJson(cBody)
+
+    oStatement := FWPreparedStatement():new()
+    oStatement:setQuery(cQuery)
+    oStatement:setString(1, jBody['hobbie'])
+    oStatement:setString(2, jPath['id'])
+
+    cQuery := oStatement:getFixQuery()
+
+    if (TCSqlExec(cQuery) < 0)
+        //erro
+        oRest:setStatusCode(400)
+        oRest:setResponse("Erro na alteração do registro, detalhes: " + TcSqlError())
+    else
+        //sucesso
+        oRest:setStatusCode(200) 
+        oRest:setResponse("Registro alterado com sucesso")
     endif
 Return
