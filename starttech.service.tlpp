@@ -8,12 +8,15 @@ namespace totvs.framework.starttech
 Criação de api's para a aula de rest da Start Tech 2024
 
 @author  Vanessa Ruama
-@since   25/11/2024
+@since   27/11/2024
 @version 1.0
 /*/
 //-------------------------------------------------------------------
 Class startTechService
     Public Method New() Constructor
+
+    @post("api/framework/v1/starttech")
+    Public Method post() as logical 
 EndClass
 
 //-------------------------------------------------------------------
@@ -26,4 +29,48 @@ Method construtor da classe
 /*/
 //-------------------------------------------------------------------
 Method new() Class startTechService
+Return
+
+//-------------------------------------------------------------------
+/*/{Protheus.doc} post
+Method criado para incluir registros na tabela starttech
+
+@author  Vanessa Ruama
+@since   27/11/2024
+@version 1.0
+/*/
+//-------------------------------------------------------------------
+Method post() Class startTechService
+    local cBody as character
+    local jBody as json
+    local cQuery as character
+    local oStatement as object
+
+    oRest:appendKeyHeaderResponse("Content-Type", "application/json")
+
+    cBody := DecodeUtf8(oRest:getBodyRequest())
+    jBody := JsonObject():new()
+    jBody:fromJson(cBody)
+
+    cQuery := "INSERT INTO STARTTECH"
+    cQuery += " (ST__ID, ST__CLASS, ST__NAME, ST__AGE, ST__HOBBIE)"
+    cQuery += " VALUES (?,?,?,?,?)"
+
+    oStatement := FWPreparedStatement():new()
+    oStatement:setQuery(cQuery)
+    oStatement:setString(1, jBody['id'])
+    oStatement:setString(2, jBody['class'])
+    oStatement:setString(3, jBody['name'])
+    oStatement:setNumeric(4, jBody['age'])
+    oStatement:setString(5, jBody['hobbie'])
+
+    if (TCSqlExec(oStatement:getFixQuery()) < 0)
+        //erro
+        oRest:setStatusCode(400)
+        oRest:setResponse("Erro na criação do registro, detalhes: " + TcSqlError())
+    else
+        //sucesso
+        oRest:setStatusCode(201)
+        oRest:setResponse("Registro criado com sucesso")
+    endif
 Return
